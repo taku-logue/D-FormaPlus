@@ -7,16 +7,15 @@ import { calculateCurrentPositions } from "../lib/positionCalculator";
 import { formatTimeUI } from "../utils/timeFormat";
 import { useYouTubePlayer } from "../hooks/useYouTubePlayer";
 import { usePlaybackSync } from "../hooks/usePlaybackSync";
-// 🌟 先ほど作成した最強のシミュレーション計算フック
 import { useDFormaSimulation } from "../hooks/useDFormaSimulation";
 
 export default function EditorApp() {
-  // === 1. 唯一の「入力」ステート ===
   const [fileName, setFileName] = useState("ファイルが選択されていません");
-  const [fileContent, setFileContent] = useState("");
+  const [fileContent, setFileContent] = useState(
+    "// 左上の「ファイルを開く」から \n// D-Forma+のコードを読み込んでください。\n// もしくはここに直接コードを記述できます。",
+  );
 
-  // === 2. カスタムフック群（処理の委譲） ===
-  // テキストが変わるたびに、裏で1回だけパースとタイムライン計算が走る（useEffect不要！）
+  // 🌟 フックから compile 関数を受け取る（fileContent は渡さない）
   const {
     parsedData,
     richTimeline,
@@ -24,7 +23,8 @@ export default function EditorApp() {
     syntaxError,
     semanticErrors,
     videoId,
-  } = useDFormaSimulation(fileContent);
+    compile,
+  } = useDFormaSimulation();
 
   const { youtubePlayer, isPlaying, setIsPlaying } = useYouTubePlayer(videoId);
   const { currentTime, setCurrentTime, handleSeek } = usePlaybackSync(
@@ -33,25 +33,50 @@ export default function EditorApp() {
     parsedData?.offset || 0,
   );
 
-  // === 3. 副作用（リセット処理） ===
-  // 新しいファイルが読み込まれたら、時間をゼロに戻して一時停止する
+  // 🌟 初期表示時に一度だけコンパイルを走らせる
+  useEffect(() => {
+    compile(fileContent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // シミュレーションデータが更新されたら時間をリセット
   useEffect(() => {
     setCurrentTime(0);
     setIsPlaying(false);
   }, [parsedData, setCurrentTime, setIsPlaying]);
 
-  // === 4. イベントハンドラ ===
   const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
       setFileName(file.name);
       const reader = new FileReader();
-      reader.onload = (e) => setFileContent(e.target?.result as string);
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        setFileContent(text);
+        compile(text); // 🌟 ファイルを読み込んだ瞬間に自動コンパイル
+      };
       reader.readAsText(file);
     },
-    [],
+    [compile],
   );
+
+  const handleEditorChange = useCallback(
+    (value: string | undefined) => {
+      if (value !== undefined) {
+        setFileContent(value);
+        if (fileName === "ファイルが選択されていません")
+          setFileName("unsaved.ifs");
+        // 🌟 ここでは compile(value) を呼ばない！（手動実行にするため）
+      }
+    },
+    [fileName],
+  );
+
+  // 🌟 実行ボタンやショートカットから呼ばれるハンドラ
+  const handleCompile = useCallback(() => {
+    compile(fileContent);
+  }, [compile, fileContent]);
 
   const handleCopyOffset = useCallback(() => {
     if (youtubePlayer && typeof youtubePlayer.getCurrentTime === "function") {
@@ -64,7 +89,6 @@ export default function EditorApp() {
     }
   }, [youtubePlayer]);
 
-  // === 5. UI用データの算出 ===
   const currentPositions = calculateCurrentPositions(
     parsedData,
     richTimeline,
@@ -74,7 +98,6 @@ export default function EditorApp() {
     .reverse()
     .find((f) => f.endTime <= currentTime);
 
-  // === 6. レンダリング ===
   return (
     <div className="flex flex-col h-screen bg-[#1e1e1e] text-white font-sans overflow-hidden">
       <header className="flex items-center px-4 py-2 bg-[#111] border-b border-[#333] flex-none">
@@ -92,9 +115,11 @@ export default function EditorApp() {
         <EditorPanel
           fileName={fileName}
           fileContent={fileContent}
-          errorMsg={syntaxError} // フックからそのまま渡す
-          semanticErrors={semanticErrors} // フックからそのまま渡す
+          errorMsg={syntaxError}
+          semanticErrors={semanticErrors}
           handleFileUpload={handleFileUpload}
+          handleEditorChange={handleEditorChange}
+          handleCompile={handleCompile} // 🌟 関数を渡す
         />
         <StageViewer
           videoId={videoId}

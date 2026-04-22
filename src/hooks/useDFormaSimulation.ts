@@ -1,25 +1,30 @@
-import { useMemo } from "react";
+// src/hooks/useDFormaSimulation.ts
+import { useState, useCallback } from "react";
 import { parseDForma } from "../lib/dformaParser";
 import { generateTimeline } from "../lib/timelineGenerator";
 import { DFormaData, TimelineFrame } from "../types";
 
-// fileContent を受け取り、解析結果・タイムライン・エラーなどをすべて一括で返す
-export function useDFormaSimulation(fileContent: string) {
-  return useMemo(() => {
-    // 1. ファイルが空の場合
+export function useDFormaSimulation() {
+  const [parsedData, setParsedData] = useState<DFormaData | null>(null);
+  const [richTimeline, setRichTimeline] = useState<TimelineFrame[]>([]);
+  const [maxTime, setMaxTime] = useState(0);
+  const [syntaxError, setSyntaxError] = useState("");
+  const [semanticErrors, setSemanticErrors] = useState<string[]>([]);
+  const [videoId, setVideoId] = useState("");
+
+  // 🌟 自動計算をやめ、手動コンパイル関数を作成
+  const compile = useCallback((fileContent: string) => {
     if (!fileContent) {
-      return {
-        parsedData: null as DFormaData | null,
-        richTimeline: [] as TimelineFrame[],
-        maxTime: 0,
-        syntaxError: "",
-        semanticErrors: [] as string[],
-        videoId: "",
-      };
+      setParsedData(null);
+      setRichTimeline([]);
+      setMaxTime(0);
+      setSyntaxError("");
+      setSemanticErrors([]);
+      setVideoId("");
+      return;
     }
 
     try {
-      // 2. 構文解析
       const data = parseDForma(fileContent);
       const ytId = data.youtube
         ? data.youtube
@@ -27,28 +32,33 @@ export function useDFormaSimulation(fileContent: string) {
             .match(/(?:v=|\/)([a-zA-Z0-9_-]{11})/)?.[1] || ""
         : "";
 
-      // 3. タイムライン計算
-      const { timeline, maxTime, semanticErrors } = generateTimeline(data);
+      const {
+        timeline,
+        maxTime: mTime,
+        semanticErrors: sErrors,
+      } = generateTimeline(data);
 
-      // 成功時の完全なデータを一括返却
-      return {
-        parsedData: data,
-        richTimeline: timeline,
-        maxTime,
-        syntaxError: "",
-        semanticErrors,
-        videoId: ytId,
-      };
+      // 成功したらデータを更新し、エラーを消す
+      setParsedData(data);
+      setRichTimeline(timeline);
+      setMaxTime(mTime);
+      setSyntaxError("");
+      setSemanticErrors(sErrors);
+      setVideoId(ytId);
     } catch (err: any) {
-      // 文法エラー時のフォールバック
-      return {
-        parsedData: null,
-        richTimeline: [],
-        maxTime: 0,
-        syntaxError: err.message || "予期せぬエラーが発生しました",
-        semanticErrors: [],
-        videoId: "",
-      };
+      // 🚨 【最重要】エラーになっても、以前の parsedData や videoId は初期化しない！
+      // これにより、動画やシミュレーションが消えずに残ります。
+      setSyntaxError(err.message || "予期せぬエラーが発生しました");
     }
-  }, [fileContent]); // fileContent が変わった時だけ再計算！
+  }, []);
+
+  return {
+    parsedData,
+    richTimeline,
+    maxTime,
+    syntaxError,
+    semanticErrors,
+    videoId,
+    compile, // 🌟 この関数を外部（page.tsx）に渡す
+  };
 }

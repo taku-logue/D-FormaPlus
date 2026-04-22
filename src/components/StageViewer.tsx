@@ -1,6 +1,7 @@
+// src/components/StageViewer.tsx
 import React, { useMemo } from "react";
 import { DFormaData, PositionData, TimelineFrame } from "../types";
-import ControlBar from "./ControlBar"; // 🌟 分離したコンポーネントをインポート
+import ControlBar from "./ControlBar";
 
 interface StageViewerProps {
   videoId: string;
@@ -43,13 +44,17 @@ export default function StageViewer(props: StageViewerProps) {
       {/* YouTube Preview */}
       <div className="flex-[1.1] min-h-0 p-2 border-b border-[#333] flex justify-center items-center bg-[#151515]">
         <div className="w-full h-full max-h-full max-w-[calc(100vh*16/9)] aspect-video bg-black flex flex-col items-center justify-center border border-[#333] rounded-lg shadow-2xl relative overflow-hidden text-gray-400">
-          {videoId ? (
-            <div
-              id="youtube-player-container"
-              className="absolute inset-0 w-full h-full"
-            ></div>
-          ) : (
-            <>
+          {/* 🌟 修正ポイント：Reactが管理する「絶対に削除されない外箱」 */}
+          {/* videoIdがないときは display: none で隠すだけにする */}
+          <div
+            id="youtube-wrapper"
+            className="absolute inset-0 w-full h-full z-10"
+            style={{ display: videoId ? "block" : "none" }}
+          ></div>
+
+          {/* 🌟 videoIdがない時用のプレースホルダー */}
+          {!videoId && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black">
               <svg
                 width="64"
                 height="64"
@@ -68,12 +73,11 @@ export default function StageViewer(props: StageViewerProps) {
               <span className="text-xl font-medium tracking-wider">
                 YouTube動画が読み込まれていません
               </span>
-            </>
+            </div>
           )}
         </div>
       </div>
 
-      {/* 🌟 外部化した ControlBar を配置 */}
       <ControlBar
         isPlaying={props.isPlaying}
         setIsPlaying={props.setIsPlaying}

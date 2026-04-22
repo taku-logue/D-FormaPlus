@@ -1,3 +1,4 @@
+// src/hooks/useYouTubePlayer.ts
 import { useState, useEffect } from "react";
 
 export function useYouTubePlayer(videoId: string) {
@@ -14,10 +15,16 @@ export function useYouTubePlayer(videoId: string) {
     let player: any = null;
 
     const loadVideo = () => {
-      const container = document.getElementById("youtube-player-container");
-      if (container) container.innerHTML = "";
+      // 🌟 修正ポイント：Reactが管理する外箱を取得
+      const wrapper = document.getElementById("youtube-wrapper");
+      if (wrapper) {
+        // 箱の中に、YouTubeにすり替えられてもいい「使い捨てのdiv」を純粋なJSで生成する
+        wrapper.innerHTML =
+          '<div id="youtube-player-target" style="width: 100%; height: 100%;"></div>';
+      }
 
-      player = new (window as any).YT.Player("youtube-player-container", {
+      // 生成した使い捨てdivの方をYouTube APIに渡す
+      player = new (window as any).YT.Player("youtube-player-target", {
         videoId: videoId,
         playerVars: {
           autoplay: 0,
@@ -60,10 +67,12 @@ export function useYouTubePlayer(videoId: string) {
 
     return () => {
       if (player && typeof player.destroy === "function") player.destroy();
+      // クリーンアップ時に外箱の中身も空にしておく
+      const wrapper = document.getElementById("youtube-wrapper");
+      if (wrapper) wrapper.innerHTML = "";
     };
   }, [videoId]);
 
-  // isPlaying の状態と YouTube Player の実態を同期させる
   useEffect(() => {
     if (!youtubePlayer || typeof youtubePlayer.playVideo !== "function") return;
     if (isPlaying) youtubePlayer.playVideo();
