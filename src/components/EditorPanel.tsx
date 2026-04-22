@@ -102,7 +102,7 @@ const EditorPanel = memo(
               ファイルを開く
               <input
                 type="file"
-                accept=".diap,.txt,.ifs"
+                accept=".dfp"
                 className="hidden"
                 onChange={handleFileUpload}
               />

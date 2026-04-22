@@ -49,14 +49,27 @@ export default function EditorApp() {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
+
+      // 🌟 【絶対防衛線】拡張子が .dfp かどうかを厳密にチェック
+      if (!file.name.toLowerCase().endsWith(".dfp")) {
+        alert(
+          "🚨 エラー: 読み込めるのは D-Forma+ のファイル（.dfp）のみです！",
+        );
+        event.target.value = ""; // 連続で間違ったファイルを選べるようにinputをリセット
+        return;
+      }
+
       setFileName(file.name);
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target?.result as string;
         setFileContent(text);
-        compile(text); // 🌟 ファイルを読み込んだ瞬間に自動コンパイル
+        compile(text);
       };
       reader.readAsText(file);
+
+      // 成功時もリセットしておく（同じファイルを再度選び直した時にonChangeが発火するようにするため）
+      event.target.value = "";
     },
     [compile],
   );
