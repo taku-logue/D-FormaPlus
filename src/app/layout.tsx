@@ -29,6 +29,10 @@ export const metadata: Metadata = {
     "エディタ",
   ],
 
+  verification: {
+    google: "cN-sLcDfm2pR7S-ayR1EKNcLWU4nO5gFx1pO6vX0mgk",
+  },
+
   // URLをSNSでシェアした時の見栄えを設定（OGP）
   openGraph: {
     title: "D-Forma+ | アイドルフォーメーション作成エディタ",
