@@ -1,12 +1,17 @@
+export interface Position {
+  x: number;
+  y: number;
+}
+
 export interface PositionData {
   name: string;
-  position: { x: number; y: number };
+  position: Position;
 }
 
 export interface ShapeData {
   type: string;
   params: Record<string, any>;
-  origin: { x: number; y: number };
+  origin: Position;
 }
 
 export interface FrameData {
@@ -19,7 +24,6 @@ export interface FrameData {
   songName?: string;
 }
 
-// 古い DiaPlusData を D-Forma+ 用にリネームしました！
 export interface DFormaData {
   mode: "time" | "measure";
   bpm?: number;
@@ -32,18 +36,30 @@ export interface DFormaData {
   frames: FrameData[];
 }
 
-// --- エラー処理用の型定義 ---
+// 🌟 新規追加: タイムラインと移動計算のための型
+export interface Movement {
+  start: Position;
+  end: Position;
+  control?: Position; // 衝突回避用のベジェ曲線制御点
+}
 
-// 構文エラー（Ohm.jsが弾いた文法ミス）
+export interface TimelineFrame {
+  endTime: number;
+  startTime: number;
+  duration: number;
+  movements: Record<string, Movement>;
+  sectionName?: string;
+  songName?: string;
+}
+
 export interface SyntaxErrorData {
   line: number;
   column: number;
   shortMessage: string;
 }
 
-// 監査警告（物理的・論理的なエラー。激突や速度超過など）
 export interface SemanticErrorData {
-  time: number; // エラー発生時間（内部計算用）
-  formattedTime: string; // UI表示用の時間（例: "M1:B1.0"）
-  message: string; // エラー内容
+  time: number;
+  formattedTime: string;
+  message: string;
 }
