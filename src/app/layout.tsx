@@ -15,8 +15,38 @@ const geistMono = Geist_Mono({
 
 // 🌟 ここを私たちのアプリ名に変更しました！
 export const metadata: Metadata = {
-  title: "D-Forma+ Editor",
-  description: "D-Forma+言語を使ったアイドルフォーメーションシミュレーター",
+  title: "D-Forma+ | 無料のアイドル・ダンスフォーメーション作成ツール",
+  description:
+    "ブラウザで動く無料のアイドル・ダンスフォーメーションシミュレーター。専用コードを書くだけで、ステージの立ち位置や移動の軌跡を直感的に作成・プレビューできます。",
+  keywords: [
+    "フォーメーション",
+    "アイドル",
+    "ダンス",
+    "立ち位置",
+    "シミュレーター",
+    "作成ツール",
+    "無料",
+    "エディタ",
+  ],
+
+  // URLをSNSでシェアした時の見栄えを設定（OGP）
+  openGraph: {
+    title: "D-Forma+ | アイドルフォーメーション作成エディタ",
+    description:
+      "ブラウザ上で動く無料のフォーメーションシミュレーター。立ち位置や移動を直感的にプレビュー！",
+    url: "https://d-forma-plus.vercel.app", // 🌟 あなたのVercelのURLに変更してください
+    siteName: "D-Forma+",
+    locale: "ja_JP",
+    type: "website",
+  },
+
+  // X（旧Twitter）でシェアした時のカード設定
+  twitter: {
+    card: "summary_large_image",
+    title: "D-Forma+ | アイドルフォーメーション作成エディタ",
+    description:
+      "ブラウザ上で動く無料のフォーメーションシミュレーター。立ち位置や移動を直感的にプレビュー！",
+  },
 };
 
 export default function RootLayout({
