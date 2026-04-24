@@ -1,16 +1,20 @@
 import { Position, PositionData } from "../types";
 
+// 型定義
 type ShapeFunction = (
   members: string[],
   params: Record<string, any>,
   origin: Position,
 ) => PositionData[];
 
+// 関数カタログ
 export const ShapeLibrary: Record<string, ShapeFunction> = {
+  // line関数
   line: (members, params, origin) => {
     const spacing = params.spacing !== undefined ? Number(params.spacing) : 2;
     const order: number[] = params.order || members.map((_, i) => i + 1);
 
+    // 角度の計算
     let angleDeg = 0;
     if (params.angle !== undefined) {
       if (params.angle === "vertical") angleDeg = 90;
@@ -21,6 +25,7 @@ export const ShapeLibrary: Record<string, ShapeFunction> = {
     const result: PositionData[] = [];
     const count = order.length;
 
+    // 一人ずつ座標計算
     order.forEach((memberIndex, i) => {
       const name = members[memberIndex - 1];
       if (!name)
@@ -38,4 +43,5 @@ export const ShapeLibrary: Record<string, ShapeFunction> = {
     });
     return result;
   },
+  // 今後関数の追加はここ！
 };

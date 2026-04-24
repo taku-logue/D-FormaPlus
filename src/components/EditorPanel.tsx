@@ -1,8 +1,8 @@
-// src/components/EditorPanel.tsx
 import React, { memo } from "react";
 import Editor from "@monaco-editor/react";
 import { dformaLanguageDef, dformaTheme } from "../lib/dformaMonarch";
 
+// Propsの型定義
 interface EditorPanelProps {
   fileName: string;
   fileContent: string;
@@ -10,9 +10,10 @@ interface EditorPanelProps {
   semanticErrors: string[];
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleEditorChange: (value: string | undefined) => void;
-  handleCompile: () => void; // 🌟 追加：コンパイル実行関数
+  handleCompile: () => void;
 }
 
+// エディタパネルコンポーネント
 const EditorPanel = memo(
   ({
     fileName,
@@ -44,8 +45,10 @@ const EditorPanel = memo(
 
     return (
       <section className="w-[45%] flex flex-col border-r border-[#333] bg-[#1e1e1e] relative">
+        {/* ヘッダー部分 */}
         <div className="px-4 py-2 flex items-center justify-between bg-[#1a1a1a] border-b border-[#333] flex-none">
           <div className="flex items-center gap-2 text-gray-300">
+            {/* ファイルアイコン */}
             <svg
               width="14"
               height="14"
@@ -66,7 +69,7 @@ const EditorPanel = memo(
             </span>
           </div>
 
-          {/* 🌟 実行ボタンとファイルを開くボタンを並べる */}
+          {/* 実行ボタン・ファイルを開くボタン */}
           <div className="flex items-center gap-3">
             <button
               onClick={handleCompile}
@@ -84,6 +87,7 @@ const EditorPanel = memo(
               実行 (Ctrl+S)
             </button>
 
+            {/* ファイル開くボタン */}
             <label className="cursor-pointer flex items-center gap-1.5 px-3 py-1 bg-[#2d2d2d] hover:bg-[#3d3d3d] border border-[#444] rounded text-[11px] font-medium text-gray-300 transition-colors shadow-sm">
               <svg
                 width="12"
@@ -110,6 +114,7 @@ const EditorPanel = memo(
           </div>
         </div>
 
+        {/* エラー表示領域 */}
         <div className="flex-none z-10">
           {errorMsg && (
             <div className="p-3 bg-[#3a1c1c] text-[#ff6b6b] text-xs border-b border-[#ff6b6b]/30">
@@ -119,6 +124,7 @@ const EditorPanel = memo(
             </div>
           )}
 
+          {/* 監査警告 */}
           {semanticErrors.length > 0 && (
             <div className="p-3 bg-[#3d2a0e] text-[#ff9f43] text-xs border-b border-[#e1b12c]/50 max-h-32 overflow-y-auto">
               <strong>⚠️ 監査警告</strong>
@@ -133,6 +139,7 @@ const EditorPanel = memo(
           )}
         </div>
 
+        {/* Monacoエディタ本体 */}
         <div className="flex-1 w-full relative min-h-0" key="monaco-container">
           <Editor
             height="100%"
@@ -141,7 +148,7 @@ const EditorPanel = memo(
             value={fileContent}
             onChange={handleEditorChange}
             beforeMount={handleEditorWillMount}
-            onMount={handleEditorDidMount} // 🌟 ここでショートカットキーの登録関数を渡す
+            onMount={handleEditorDidMount}
             loading={
               <div className="flex h-full items-center justify-center text-gray-500 font-mono text-sm tracking-widest">
                 LOADING EDITOR...
@@ -166,5 +173,6 @@ const EditorPanel = memo(
   },
 );
 
+// デバッグ時にコンポーネント名がAnonymousにならないようにするための設定
 EditorPanel.displayName = "EditorPanel";
 export default EditorPanel;

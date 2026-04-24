@@ -1,10 +1,12 @@
 import { DFormaData, TimelineFrame, PositionData } from "../types";
 
+// イージング関数
 const easeInOut = (t: number) => {
   t = Math.max(0, Math.min(1, t));
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 };
 
+// 現在座標計算関数
 export const calculateCurrentPositions = (
   parsedData: DFormaData | null,
   richTimeline: TimelineFrame[],
@@ -14,6 +16,7 @@ export const calculateCurrentPositions = (
 
   const result: PositionData[] = [];
   parsedData.members.forEach((member) => {
+    // 次のフレームを検索
     const nextIdx = richTimeline.findIndex((f) => f.endTime >= currentTime);
 
     if (nextIdx === -1) {
@@ -24,6 +27,7 @@ export const calculateCurrentPositions = (
       return;
     }
 
+    // 時間に達していなかったら待機
     const frame = richTimeline[nextIdx];
     const currentMove = frame.movements[member];
 
@@ -32,10 +36,12 @@ export const calculateCurrentPositions = (
       return;
     }
 
+    // 進行度の計算
     const progress =
       frame.duration > 0 ? (currentTime - frame.startTime) / frame.duration : 1;
     const eased = easeInOut(progress);
 
+    // 座標の計算
     if (currentMove.control) {
       const t = eased;
       const x =

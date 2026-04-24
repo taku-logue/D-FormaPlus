@@ -1,5 +1,6 @@
 import { Position } from "../types";
 
+// 衝突回避関数
 export const checkCollision = (
   start1: Position,
   end1: Position,
@@ -7,15 +8,20 @@ export const checkCollision = (
   end2: Position,
   threshold = 0.6,
 ) => {
+  // 速度ベクトル
   const v1x = end1.x - start1.x;
   const v1y = end1.y - start1.y;
   const v2x = end2.x - start2.x;
   const v2y = end2.y - start2.y;
+  // 相対位置ベクトル
   const dpx = start1.x - start2.x;
   const dpy = start1.y - start2.y;
+  // 相対速度ベクトル
   const dvx = v1x - v2x;
   const dvy = v1y - v2y;
+  // 相対速度大きさの2乗
   const a = dvx * dvx + dvy * dvy;
+  // 初期位置での距離の2乗
   const c = dpx * dpx + dpy * dpy;
   if (a === 0) return Math.sqrt(c) < threshold;
   const b = 2 * (dpx * dvx + dpy * dvy);
@@ -24,5 +30,6 @@ export const checkCollision = (
   return a * t * t + b * t + c < threshold * threshold;
 };
 
+// ステージ外判定関数
 export const isBackstage = (p: Position) =>
   p.x < -8 || p.x > 8 || p.y < -5 || p.y > 5;

@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 🌟 ここを私たちのアプリ名に変更しました！
+// 検索用メタデータ
 export const metadata: Metadata = {
   title: "D-Forma+ | 無料のアイドル・ダンスフォーメーション作成ツール",
   description:
@@ -29,22 +29,23 @@ export const metadata: Metadata = {
     "エディタ",
   ],
 
+  // Googlr Search Consoleの所有権確認
   verification: {
     google: "cN-sLcDfm2pR7S-ayR1EKNcLWU4nO5gFx1pO6vX0mgk",
   },
 
-  // URLをSNSでシェアした時の見栄えを設定（OGP）
+  // URLをSNSでシェアした時の見栄えを設定
   openGraph: {
     title: "D-Forma+ | アイドルフォーメーション作成エディタ",
     description:
       "ブラウザ上で動く無料のフォーメーションシミュレーター。立ち位置や移動を直感的にプレビュー！",
-    url: "https://d-forma-plus.vercel.app", // 🌟 あなたのVercelのURLに変更してください
+    url: "https://d-forma-plus.vercel.app",
     siteName: "D-Forma+",
     locale: "ja_JP",
     type: "website",
   },
 
-  // X（旧Twitter）でシェアした時のカード設定
+  // Xでシェアした時のカード設定
   twitter: {
     card: "summary_large_image",
     title: "D-Forma+ | アイドルフォーメーション作成エディタ",
@@ -53,6 +54,7 @@ export const metadata: Metadata = {
   },
 };
 
+// HTMLの骨組み
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -60,7 +62,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="ja" // 🌟 ついでに英語(en)から日本語(ja)にしておきました
+      lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

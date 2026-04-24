@@ -1,19 +1,23 @@
+// 座標
 export interface Position {
   x: number;
   y: number;
 }
 
+// メンバー＋座標
 export interface PositionData {
   name: string;
   position: Position;
 }
 
+// shapeライブラリ
 export interface ShapeData {
   type: string;
   params: Record<string, any>;
   origin: Position;
 }
 
+// フレームの時間データ
 export interface FrameData {
   type: "frame";
   id: string;
@@ -24,6 +28,7 @@ export interface FrameData {
   songName?: string;
 }
 
+// パーサーが出力する全データ
 export interface DFormaData {
   mode: "time" | "measure";
   bpm?: number;
@@ -36,13 +41,14 @@ export interface DFormaData {
   frames: FrameData[];
 }
 
-// 🌟 新規追加: タイムラインと移動計算のための型
+// タイムラインと移動計算の型
 export interface Movement {
   start: Position;
   end: Position;
-  control?: Position; // 衝突回避用のベジェ曲線制御点
+  control?: Position;
 }
 
+// タイムラインスケジュール
 export interface TimelineFrame {
   endTime: number;
   startTime: number;
@@ -52,12 +58,14 @@ export interface TimelineFrame {
   songName?: string;
 }
 
+// 構文エラー
 export interface SyntaxErrorData {
   line: number;
   column: number;
   shortMessage: string;
 }
 
+// 意味的エラー
 export interface SemanticErrorData {
   time: number;
   formattedTime: string;

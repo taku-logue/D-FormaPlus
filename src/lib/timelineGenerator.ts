@@ -9,14 +9,17 @@ import { checkCollision, isBackstage } from "../utils/geometry";
 import { formatTimeError } from "../utils/timeFormat";
 import { ShapeLibrary } from "./shapes";
 
+// タイムライン生成エンジン
 export function generateTimeline(parsedData: DFormaData) {
   if (!parsedData || parsedData.frames.length === 0) {
     return { timeline: [], maxTime: 0, semanticErrors: [] };
   }
 
+  // 時間の正規化
   const bpm = parsedData.bpm || 120;
   const parseTime = (id: string) => {
     if (parsedData.mode === "measure") {
+      // 小節：拍を秒数に変換
       let m = 1,
         b = 1;
       if (id.includes(":")) [m, b] = id.split(":").map(Number);
@@ -24,6 +27,7 @@ export function generateTimeline(parsedData: DFormaData) {
       const totalBeats = (m - 1) * 4 + (b - 1);
       return totalBeats * (60 / bpm);
     } else {
+      // 分：秒を秒数に変換
       if (id.includes(":")) {
         const [min, sec] = id.split(":").map(Number);
         return min * 60 + sec;
@@ -32,12 +36,14 @@ export function generateTimeline(parsedData: DFormaData) {
     }
   };
 
+  // 時間軸でフレームをソート
   const sortedFrames = [...parsedData.frames].sort(
     (a, b) => parseTime(a.id) - parseTime(b.id),
   );
   const initialPositions: Record<string, Position> = {};
   const newSemanticErrors: string[] = [];
 
+  // 初期一の特定
   sortedFrames.forEach((frame) => {
     try {
       if (frame.shapes) {
@@ -63,6 +69,7 @@ export function generateTimeline(parsedData: DFormaData) {
     }
   });
 
+  // 初期状態セットアップ
   const timeline: TimelineFrame[] = [];
   const currentState: Record<string, PositionData> = {};
   let mTime = 0;
@@ -75,10 +82,12 @@ export function generateTimeline(parsedData: DFormaData) {
     };
   });
 
+  // フレームごとの移動計算
   sortedFrames.forEach((frame) => {
     const t = parseTime(frame.id);
     mTime = Math.max(mTime, t);
 
+    // 目標地点計算
     const targetPositions: Record<string, PositionData> = {};
     try {
       if (frame.shapes) {
@@ -103,6 +112,7 @@ export function generateTimeline(parsedData: DFormaData) {
       );
     }
 
+    // 指示がなかったら待機
     parsedData.members.forEach((m) => {
       if (!targetPositions[m] && currentState[m])
         targetPositions[m] = { ...currentState[m] };
@@ -118,6 +128,7 @@ export function generateTimeline(parsedData: DFormaData) {
       };
     });
 
+    // 移動時間計算
     let moveDuration = Math.max(0, t - lastTime);
     if (frame.transition !== undefined && frame.transition !== null) {
       moveDuration =
@@ -128,6 +139,7 @@ export function generateTimeline(parsedData: DFormaData) {
 
     const members = parsedData.members;
 
+    // 異常検知
     for (let i = 0; i < members.length; i++) {
       for (let j = i + 1; j < members.length; j++) {
         const p1 = targetPositions[members[i]]?.position;
@@ -142,6 +154,7 @@ export function generateTimeline(parsedData: DFormaData) {
       }
     }
 
+    // 速度チェック
     members.forEach((m) => {
       const move = movements[m];
       if (
@@ -159,6 +172,7 @@ export function generateTimeline(parsedData: DFormaData) {
         );
     });
 
+    // ベジェ制御点の生成
     const BASE_EVADE = 0.6;
     for (let i = 0; i < members.length; i++) {
       for (let j = i + 1; j < members.length; j++) {
@@ -230,6 +244,7 @@ export function generateTimeline(parsedData: DFormaData) {
       }
     }
 
+    // フレームデータをタイムラインに追加
     timeline.push({
       endTime: t,
       startTime: t - moveDuration,
@@ -238,6 +253,8 @@ export function generateTimeline(parsedData: DFormaData) {
       sectionName: frame.sectionName,
       songName: frame.songName,
     });
+
+    // 現在座標の更新
     parsedData.members.forEach((m) => {
       if (targetPositions[m]) currentState[m] = { ...targetPositions[m] };
     });

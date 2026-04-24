@@ -1,16 +1,16 @@
 import { dformaGrammar } from "./dformaGrammar";
 import { DFormaData } from "../types";
 
-/**
- * D-Forma+ 解析ロジック
- * 文法に基づいてテキストを解析し、プログラムで扱えるオブジェクト形式に変換します。
- */
+// D-Forma+ 解析ロジック
 export const semantics = dformaGrammar.createSemantics();
 
+// 変換ルールはtoJSON
 semantics.addOperation("toJSON", {
+  // + などの繰り返しがきたときの処理は子要素をまたtoJSON()を返す
   _iter(...children) {
     return children.map((c) => c.toJSON());
   },
+  // 文の終端処理は文字列を返す
   _terminal() {
     return this.sourceString;
   },
@@ -47,6 +47,7 @@ semantics.addOperation("toJSON", {
     let colors: string[] = [];
     const frames: any[] = [];
 
+    // メンバー定義、色定義、セクション、フレームかで条件分岐
     body.children.forEach((b: any) => {
       const parsed = b.toJSON();
       if (parsed.type === "members") {
@@ -137,9 +138,7 @@ semantics.addOperation("toJSON", {
   },
 });
 
-/**
- * 外部から呼び出すためのメイン関数
- */
+// 外部から呼び出すためのメイン関数
 export function parseDForma(code: string): DFormaData {
   const matchResult = dformaGrammar.match(code);
 

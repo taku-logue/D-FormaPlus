@@ -1,21 +1,27 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+
+// UIパーツの読み込み
 import EditorPanel from "../components/EditorPanel";
 import StageViewer from "../components/StageViewer";
 
+// ロジックの読み込み
 import { calculateCurrentPositions } from "../lib/positionCalculator";
 import { formatTimeUI } from "../utils/timeFormat";
+
+// カスタムックの読み込み
 import { useYouTubePlayer } from "../hooks/useYouTubePlayer";
 import { usePlaybackSync } from "../hooks/usePlaybackSync";
 import { useDFormaSimulation } from "../hooks/useDFormaSimulation";
 
 export default function EditorApp() {
+  // ファイル名やエディタ上の文字の記憶
   const [fileName, setFileName] = useState("ファイルが選択されていません");
   const [fileContent, setFileContent] = useState(
     "// 左上の「ファイルを開く」から \n// D-Forma+のコードを読み込んでください。\n// もしくはここに直接コードを記述できます。",
   );
 
-  // 🌟 フックから compile 関数を受け取る（fileContent は渡さない）
+  // 文字をデータに変換
   const {
     parsedData,
     richTimeline,
@@ -26,14 +32,17 @@ export default function EditorApp() {
     compile,
   } = useDFormaSimulation();
 
+  // 描写準備
   const { youtubePlayer, isPlaying, setIsPlaying } = useYouTubePlayer(videoId);
+
+  // 同期準備
   const { currentTime, setCurrentTime, handleSeek } = usePlaybackSync(
     youtubePlayer,
     isPlaying,
     parsedData?.offset || 0,
   );
 
-  // 🌟 初期表示時に一度だけコンパイルを走らせる
+  // 初期表示時に一度コンパイル
   useEffect(() => {
     compile(fileContent);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,17 +54,18 @@ export default function EditorApp() {
     setIsPlaying(false);
   }, [parsedData, setCurrentTime, setIsPlaying]);
 
+  // ファイルがアップロードされたときの処理
   const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      // 🌟 【絶対防衛線】拡張子が .dfp かどうかを厳密にチェック
+      // 拡張子が .dfp かどうかをチェック
       if (!file.name.toLowerCase().endsWith(".dfp")) {
         alert(
           "🚨 エラー: 読み込めるのは D-Forma+ のファイル（.dfp）のみです！",
         );
-        event.target.value = ""; // 連続で間違ったファイルを選べるようにinputをリセット
+        event.target.value = "";
         return;
       }
 
@@ -68,29 +78,29 @@ export default function EditorApp() {
       };
       reader.readAsText(file);
 
-      // 成功時もリセットしておく（同じファイルを再度選び直した時にonChangeが発火するようにするため）
       event.target.value = "";
     },
     [compile],
   );
 
+  // エディタで文字が入力されたときの処理
   const handleEditorChange = useCallback(
     (value: string | undefined) => {
       if (value !== undefined) {
         setFileContent(value);
         if (fileName === "ファイルが選択されていません")
           setFileName("unsaved.ifs");
-        // 🌟 ここでは compile(value) を呼ばない！（手動実行にするため）
       }
     },
     [fileName],
   );
 
-  // 🌟 実行ボタンやショートカットから呼ばれるハンドラ
+  // 実行ボタンやショートカットが押されたときの処理
   const handleCompile = useCallback(() => {
     compile(fileContent);
   }, [compile, fileContent]);
 
+  // オフセットをコピーする処理
   const handleCopyOffset = useCallback(() => {
     if (youtubePlayer && typeof youtubePlayer.getCurrentTime === "function") {
       const time = youtubePlayer.getCurrentTime();
@@ -102,17 +112,21 @@ export default function EditorApp() {
     }
   }, [youtubePlayer]);
 
+  // 毎フレームの計算
   const currentPositions = calculateCurrentPositions(
     parsedData,
     richTimeline,
     currentTime,
   );
+  // 土のセクションを計算しているか特定
   const currentFrameObj = [...richTimeline]
     .reverse()
     .find((f) => f.endTime <= currentTime);
 
+  // レンダリング
   return (
     <div className="flex flex-col h-screen bg-[#1e1e1e] text-white font-sans overflow-hidden">
+      {/* 画面上部のヘッダー */}
       <header className="flex items-center px-4 py-2 bg-[#111] border-b border-[#333] flex-none">
         <div className="flex items-center gap-3">
           <div className="bg-[#c242f5] text-white font-bold w-7 h-7 flex items-center justify-center rounded text-xs">
@@ -124,7 +138,9 @@ export default function EditorApp() {
         </div>
       </header>
 
+      {/* メイン画面 */}
       <main className="flex flex-1 overflow-hidden">
+        {/* 左側：エディタパネル */}
         <EditorPanel
           fileName={fileName}
           fileContent={fileContent}
@@ -132,8 +148,9 @@ export default function EditorApp() {
           semanticErrors={semanticErrors}
           handleFileUpload={handleFileUpload}
           handleEditorChange={handleEditorChange}
-          handleCompile={handleCompile} // 🌟 関数を渡す
+          handleCompile={handleCompile}
         />
+        {/* 右側：ステージビューワー */}
         <StageViewer
           videoId={videoId}
           isPlaying={isPlaying}

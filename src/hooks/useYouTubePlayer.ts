@@ -1,10 +1,11 @@
-// src/hooks/useYouTubePlayer.ts
 import { useState, useEffect } from "react";
 
+// YouTubeプレイヤー制御フック
 export function useYouTubePlayer(videoId: string) {
   const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // YouTube APIの読み込み・プレイヤー初期化
   useEffect(() => {
     if (!videoId) {
       setYoutubePlayer(null);
@@ -14,16 +15,14 @@ export function useYouTubePlayer(videoId: string) {
 
     let player: any = null;
 
+    // プレイヤーを描画
     const loadVideo = () => {
-      // 🌟 修正ポイント：Reactが管理する外箱を取得
       const wrapper = document.getElementById("youtube-wrapper");
       if (wrapper) {
-        // 箱の中に、YouTubeにすり替えられてもいい「使い捨てのdiv」を純粋なJSで生成する
         wrapper.innerHTML =
           '<div id="youtube-player-target" style="width: 100%; height: 100%;"></div>';
       }
 
-      // 生成した使い捨てdivの方をYouTube APIに渡す
       player = new (window as any).YT.Player("youtube-player-target", {
         videoId: videoId,
         playerVars: {
@@ -45,6 +44,7 @@ export function useYouTubePlayer(videoId: string) {
       });
     };
 
+    // YouTube APIがブラウザに読み込まれているかチェック
     if (window && (window as any).YT && (window as any).YT.Player) {
       loadVideo();
     } else {
@@ -65,14 +65,15 @@ export function useYouTubePlayer(videoId: string) {
       }
     }
 
+    // クリーンアップ関数
     return () => {
       if (player && typeof player.destroy === "function") player.destroy();
-      // クリーンアップ時に外箱の中身も空にしておく
       const wrapper = document.getElementById("youtube-wrapper");
       if (wrapper) wrapper.innerHTML = "";
     };
   }, [videoId]);
 
+  // React側からの命令をYouTubeプレイヤーに伝える
   useEffect(() => {
     if (!youtubePlayer || typeof youtubePlayer.playVideo !== "function") return;
     if (isPlaying) youtubePlayer.playVideo();

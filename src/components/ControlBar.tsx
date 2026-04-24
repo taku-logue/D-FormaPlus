@@ -1,6 +1,7 @@
 import React from "react";
 import { TimelineFrame } from "../types";
 
+// Propsの型定義
 interface ControlBarProps {
   isPlaying: boolean;
   setIsPlaying: (val: boolean) => void;
@@ -23,7 +24,9 @@ export default function ControlBar({
   currentFrameObj,
 }: ControlBarProps) {
   return (
+    // バー全体のコンテナ
     <div className="flex-none flex items-center px-4 py-1.5 border-b border-[#333] bg-[#1e1e1e] gap-4 z-20 shadow-md">
+      {/* ロゴ・タイトル部分 */}
       <div className="flex items-center gap-2 text-gray-400 font-bold tracking-widest text-[10px] w-32">
         <svg
           width="14"
@@ -44,6 +47,7 @@ export default function ControlBar({
         STAGE PREVIEW
       </div>
 
+      {/* 操作ボタン群 */}
       <div className="flex items-center gap-2 border-l border-r border-[#444] px-3">
         <button
           onClick={() => setIsPlaying(!isPlaying)}
@@ -60,6 +64,7 @@ export default function ControlBar({
             </svg>
           )}
         </button>
+        {/* オフセットコピーボタン */}
         <button
           onClick={handleCopyOffset}
           title="今の時間をOffsetとしてコピー"
@@ -81,10 +86,12 @@ export default function ControlBar({
         </button>
       </div>
 
+      {/* 現在の再生時間表示 */}
       <div className="text-[13px] font-mono w-24 text-center text-gray-200 tracking-wider">
         {formatTimeUI(currentTime)}
       </div>
 
+      {/* シークバー部分 */}
       <div className="flex-1 flex items-center relative h-5">
         <input
           type="range"
@@ -111,6 +118,7 @@ export default function ControlBar({
         ></div>
       </div>
 
+      {/* セクション名・曲名表示 */}
       <div className="w-48 text-right text-[11px] font-bold text-[#00d2ff] truncate">
         {currentFrameObj?.songName ? `🎵 ${currentFrameObj.songName}` : ""}
         {currentFrameObj?.sectionName

@@ -1,8 +1,8 @@
-// src/components/StageViewer.tsx
 import React, { useMemo } from "react";
 import { DFormaData, PositionData, TimelineFrame } from "../types";
 import ControlBar from "./ControlBar";
 
+// Propsの型定義
 interface StageViewerProps {
   videoId: string;
   isPlaying: boolean;
@@ -20,15 +20,16 @@ interface StageViewerProps {
 export default function StageViewer(props: StageViewerProps) {
   const { videoId, parsedData, getCurrentPositions } = props;
 
-  const REAL_WIDTH = 15;
+  // ステージの大きさ
+  const REAL_WIDTH = 16;
   const REAL_HEIGHT = 8;
   const DOT_RADIUS = 0.25;
+  // 縮尺
   const SCALE = 50;
-  const VIEW_WIDTH = 850;
+  const VIEW_WIDTH = 900;
   const VIEW_HEIGHT = 500;
   const CENTER_X = VIEW_WIDTH / 2;
-  const CENTER_Y = VIEW_HEIGHT / 2;
-
+  const CENTER_Y = VIEW_HEIGHT / 2; // メンバーカラー
   const memberColorMap = useMemo(() => {
     const map: Record<string, string> = {};
     if (parsedData?.members) {
@@ -41,18 +42,16 @@ export default function StageViewer(props: StageViewerProps) {
 
   return (
     <section className="w-[55%] flex flex-col bg-[#0a0a0a] overflow-hidden">
-      {/* YouTube Preview */}
+      {/* YouTube動画エリア */}
       <div className="flex-[1.1] min-h-0 p-2 border-b border-[#333] flex justify-center items-center bg-[#151515]">
         <div className="w-full h-full max-h-full max-w-[calc(100vh*16/9)] aspect-video bg-black flex flex-col items-center justify-center border border-[#333] rounded-lg shadow-2xl relative overflow-hidden text-gray-400">
-          {/* 🌟 修正ポイント：Reactが管理する「絶対に削除されない外箱」 */}
-          {/* videoIdがないときは display: none で隠すだけにする */}
           <div
             id="youtube-wrapper"
             className="absolute inset-0 w-full h-full z-10"
             style={{ display: videoId ? "block" : "none" }}
           ></div>
 
-          {/* 🌟 videoIdがない時用のプレースホルダー */}
+          {/* videoIdがない時用のプレースホルダー */}
           {!videoId && (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black">
               <svg
@@ -78,6 +77,7 @@ export default function StageViewer(props: StageViewerProps) {
         </div>
       </div>
 
+      {/* コントロールバー */}
       <ControlBar
         isPlaying={props.isPlaying}
         setIsPlaying={props.setIsPlaying}
@@ -89,13 +89,14 @@ export default function StageViewer(props: StageViewerProps) {
         currentFrameObj={props.currentFrameObj}
       />
 
-      {/* Stage Viewer (SVG) */}
+      {/* ステージ */}
       <div className="flex-[1.3] min-h-0 p-2 flex justify-center items-center bg-[#0f0f0f] relative">
         <div className="w-full h-full max-h-full max-w-[calc(100vh*16/9)] aspect-video border border-[#333] rounded-xl relative overflow-hidden bg-[#1a1a1a] shadow-2xl">
           <svg
             viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
             className="absolute inset-0 w-full h-full"
           >
+            {/* 縦のグリッド線 */}
             {Array.from({ length: REAL_WIDTH + 1 }).map((_, i) => {
               const x = CENTER_X - (REAL_WIDTH / 2) * SCALE + i * SCALE;
               return (
@@ -110,6 +111,7 @@ export default function StageViewer(props: StageViewerProps) {
                 />
               );
             })}
+            {/* 横のグリッド線 */}
             {Array.from({ length: REAL_HEIGHT + 1 }).map((_, i) => {
               const y = CENTER_Y - (REAL_HEIGHT / 2) * SCALE + i * SCALE;
               return (
@@ -124,8 +126,10 @@ export default function StageViewer(props: StageViewerProps) {
                 />
               );
             })}
+            {/* センターマーク */}
             <circle cx={CENTER_X} cy={CENTER_Y} r="4" fill="#666" />
 
+            {/* メンバーの描写 */}
             {getCurrentPositions().map((member) => {
               if (!member || !member.position) return null;
               const color = memberColorMap[member.name] || "#8e44ad";
@@ -134,6 +138,7 @@ export default function StageViewer(props: StageViewerProps) {
                   key={member.name}
                   transform={`translate(${CENTER_X + member.position.x * SCALE}, ${CENTER_Y - member.position.y * SCALE})`}
                 >
+                  {/* 丸 */}
                   <circle
                     r={DOT_RADIUS * SCALE}
                     fill={color}
@@ -141,6 +146,7 @@ export default function StageViewer(props: StageViewerProps) {
                     strokeWidth="2"
                     style={{ filter: `drop-shadow(0 0 10px ${color})` }}
                   />
+                  {/* 名前 */}
                   <text
                     y={-(DOT_RADIUS * SCALE) - 8}
                     fill="#ccc"

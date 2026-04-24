@@ -1,10 +1,11 @@
-// src/hooks/useDFormaSimulation.ts
 import { useState, useCallback } from "react";
 import { parseDForma } from "../lib/dformaParser";
 import { generateTimeline } from "../lib/timelineGenerator";
 import { DFormaData, TimelineFrame } from "../types";
 
+// シミュレーション状態管理フック
 export function useDFormaSimulation() {
+  // Reactの状態定義
   const [parsedData, setParsedData] = useState<DFormaData | null>(null);
   const [richTimeline, setRichTimeline] = useState<TimelineFrame[]>([]);
   const [maxTime, setMaxTime] = useState(0);
@@ -12,7 +13,7 @@ export function useDFormaSimulation() {
   const [semanticErrors, setSemanticErrors] = useState<string[]>([]);
   const [videoId, setVideoId] = useState("");
 
-  // 🌟 自動計算をやめ、手動コンパイル関数を作成
+  // コンパイル関数
   const compile = useCallback((fileContent: string) => {
     if (!fileContent) {
       setParsedData(null);
@@ -46,12 +47,11 @@ export function useDFormaSimulation() {
       setSemanticErrors(sErrors);
       setVideoId(ytId);
     } catch (err: any) {
-      // 🚨 【最重要】エラーになっても、以前の parsedData や videoId は初期化しない！
-      // これにより、動画やシミュレーションが消えずに残ります。
       setSyntaxError(err.message || "予期せぬエラーが発生しました");
     }
   }, []);
 
+  // UIコンポーネントに渡す
   return {
     parsedData,
     richTimeline,
@@ -59,6 +59,6 @@ export function useDFormaSimulation() {
     syntaxError,
     semanticErrors,
     videoId,
-    compile, // 🌟 この関数を外部（page.tsx）に渡す
+    compile,
   };
 }

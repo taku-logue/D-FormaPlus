@@ -1,7 +1,5 @@
-// src/lib/dformaMonarch.ts
-
-// D-Forma+ の文法トークン定義
 export const dformaLanguageDef = {
+  // 予約語の登録
   keywords: [
     "mode",
     "time",
@@ -20,9 +18,9 @@ export const dformaLanguageDef = {
   operators: ["=", ":", "@"],
   symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
+  // 文字の読み取り機構
   tokenizer: {
     root: [
-      // キーワードと識別子の判定
       [
         /[a-z_$][\w$]*/,
         {
@@ -40,7 +38,7 @@ export const dformaLanguageDef = {
       [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
       [/\d+/, "number"],
 
-      // 文字列 (ダブルクォーテーション)
+      // 文字列
       [/"([^"\\]|\\.)*$/, "string.invalid"],
       [/"/, { token: "string.quote", bracket: "@open", next: "@string" }],
 
@@ -64,19 +62,19 @@ export const dformaLanguageDef = {
   },
 };
 
-// D-Forma+ 用のオリジナルカラーテーマ
+// D-Forma+ カラーテーマ
 export const dformaTheme = {
   base: "vs-dark" as const,
   inherit: true,
   rules: [
-    { token: "keyword", foreground: "c242f5", fontStyle: "bold" }, // 紫色 (IFロゴカラー)
+    { token: "keyword", foreground: "c242f5", fontStyle: "bold" }, // 紫色
     { token: "string", foreground: "2ed573" }, // 緑色
     { token: "number", foreground: "ff4757" }, // 赤色
-    { token: "comment", foreground: "6c757d", fontStyle: "italic" }, // グレーイタリック
-    { token: "identifier", foreground: "e0e0e0" }, // 白に近いグレー
+    { token: "comment", foreground: "6c757d", fontStyle: "italic" }, // グレー
+    { token: "identifier", foreground: "e0e0e0" }, // グレー
     { token: "operator", foreground: "00d2ff" }, // 水色
   ],
   colors: {
-    "editor.background": "#1e1e1e", // EditorPanelの背景色に合わせる
+    "editor.background": "#1e1e1e", // Editorの背景色
   },
 };
