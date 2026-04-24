@@ -6,9 +6,10 @@ export const formatTimeError = (seconds: number, parsedData: DFormaData) => {
   if (parsedData.mode === "measure") {
     const bpm = parsedData.bpm || 120;
     const totalBeats = seconds / (60 / bpm);
-    const m = Math.floor(totalBeats / 4) + 1;
-    const b = (totalBeats % 4) + 1;
-    return `M${m}:B${b.toFixed(1).replace(".0", "")}`;
+    const roundedBeats = Math.round(totalBeats * 10) / 10;
+    const m = Math.floor(roundedBeats / 4) + 1;
+    const b = (roundedBeats % 4) + 1;
+    return `M${m} : B${b.toFixed(1).replace(".0", "")}`;
   }
   // 時間モード
   const m = Math.floor(seconds / 60);
@@ -25,8 +26,9 @@ export const formatTimeUI = (
   if (parsedData?.mode === "measure") {
     const bpm = parsedData.bpm || 120;
     const totalBeats = seconds / (60 / bpm);
-    const m = Math.floor(totalBeats / 4) + 1;
-    const b = (totalBeats % 4) + 1;
+    const roundedBeats = Math.round(totalBeats * 10) / 10;
+    const m = Math.floor(roundedBeats / 4) + 1;
+    const b = (roundedBeats % 4) + 1;
     return `M${m} : B${b.toFixed(1).replace(".0", "")}`;
   }
   // 時間モード

@@ -40,6 +40,25 @@ export default function StageViewer(props: StageViewerProps) {
     return map;
   }, [parsedData]);
 
+  const handleStageClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    // Y軸反転をやめたので、そのまま計算
+    const rawX = (clickX - CENTER_X) / SCALE;
+    const rawY = (clickY - CENTER_Y) / SCALE;
+
+    // 0.5刻みにスナップ（丸める）
+    const snappedX = Math.round(rawX * 2) / 2;
+    const snappedY = Math.round(rawY * 2) / 2;
+
+    const coordText = `(${snappedX}, ${snappedY})`;
+    navigator.clipboard.writeText(coordText).then(() => {
+      alert(`座標 ${coordText} をコピーしました！`);
+    });
+  };
+
   return (
     <section className="w-[55%] flex flex-col bg-[#0a0a0a] overflow-hidden">
       {/* YouTube動画エリア */}
@@ -93,37 +112,58 @@ export default function StageViewer(props: StageViewerProps) {
       <div className="flex-[1.3] min-h-0 p-2 flex justify-center items-center bg-[#0f0f0f] relative">
         <div className="w-full h-full max-h-full max-w-[calc(100vh*16/9)] aspect-video border border-[#333] rounded-xl relative overflow-hidden bg-[#1a1a1a] shadow-2xl">
           <svg
+            onClick={handleStageClick}
             viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-            className="absolute inset-0 w-full h-full"
+            className="absolute inset-0 w-full h-full cursor-crosshair"
           >
             {/* 縦のグリッド線 */}
             {Array.from({ length: REAL_WIDTH + 1 }).map((_, i) => {
-              const x = CENTER_X - (REAL_WIDTH / 2) * SCALE + i * SCALE;
+              const val = i - REAL_WIDTH / 2;
+              const x = CENTER_X + val * SCALE;
               return (
-                <line
-                  key={`v-${i}`}
-                  x1={x}
-                  y1={CENTER_Y - (REAL_HEIGHT / 2) * SCALE}
-                  x2={x}
-                  y2={CENTER_Y + (REAL_HEIGHT / 2) * SCALE}
-                  stroke="#333"
-                  strokeWidth={i === REAL_WIDTH / 2 ? 2 : 1}
-                />
+                <g key={`v-${i}`}>
+                  <line
+                    x1={x}
+                    y1={0}
+                    x2={x}
+                    y2={VIEW_HEIGHT}
+                    stroke="#333"
+                    strokeWidth={val === 0 ? 2 : 1}
+                  />
+                  {val !== 0 && (
+                    <text x={x + 4} y={CENTER_Y - 4} fill="#555" fontSize="10">
+                      {val}
+                    </text>
+                  )}
+                </g>
               );
             })}
             {/* 横のグリッド線 */}
             {Array.from({ length: REAL_HEIGHT + 1 }).map((_, i) => {
-              const y = CENTER_Y - (REAL_HEIGHT / 2) * SCALE + i * SCALE;
+              const val = i - REAL_HEIGHT / 2;
+              const y = CENTER_Y + val * SCALE;
               return (
-                <line
-                  key={`h-${i}`}
-                  x1={CENTER_X - (REAL_WIDTH / 2) * SCALE}
-                  y1={y}
-                  x2={CENTER_X + (REAL_WIDTH / 2) * SCALE}
-                  y2={y}
-                  stroke="#333"
-                  strokeWidth={i === REAL_HEIGHT / 2 ? 2 : 1}
-                />
+                <g key={`h-${i}`}>
+                  <line
+                    x1={0}
+                    y1={y}
+                    x2={VIEW_WIDTH}
+                    y2={y}
+                    stroke="#333"
+                    strokeWidth={val === 0 ? 2 : 1}
+                  />
+                  {val !== 0 && (
+                    <text
+                      x={CENTER_X + 4}
+                      y={y - 4}
+                      fill="#555"
+                      fontSize="10"
+                      className="select-none"
+                    >
+                      {val}
+                    </text>
+                  )}
+                </g>
               );
             })}
             {/* センターマーク */}
@@ -136,7 +176,7 @@ export default function StageViewer(props: StageViewerProps) {
               return (
                 <g
                   key={member.name}
-                  transform={`translate(${CENTER_X + member.position.x * SCALE}, ${CENTER_Y - member.position.y * SCALE})`}
+                  transform={`translate(${CENTER_X + member.position.x * SCALE}, ${CENTER_Y + member.position.y * SCALE})`}
                 >
                   {/* 丸 */}
                   <circle

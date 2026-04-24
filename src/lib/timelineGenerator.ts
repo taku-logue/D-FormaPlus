@@ -84,8 +84,7 @@ export function generateTimeline(parsedData: DFormaData) {
 
   // フレームごとの移動計算
   sortedFrames.forEach((frame) => {
-    const t = parseTime(frame.id);
-    mTime = Math.max(mTime, t);
+    const startT = parseTime(frame.id);
 
     // 目標地点計算
     const targetPositions: Record<string, PositionData> = {};
@@ -108,7 +107,7 @@ export function generateTimeline(parsedData: DFormaData) {
       }
     } catch (e: any) {
       newSemanticErrors.push(
-        `[${formatTimeError(t, parsedData)}] Shape生成エラー: ${e.message}`,
+        `[${formatTimeError(startT, parsedData)}] Shape生成エラー: ${e.message}`,
       );
     }
 
@@ -129,13 +128,16 @@ export function generateTimeline(parsedData: DFormaData) {
     });
 
     // 移動時間計算
-    let moveDuration = Math.max(0, t - lastTime);
+    let moveDuration = 0;
     if (frame.transition !== undefined && frame.transition !== null) {
       moveDuration =
         parsedData.mode === "measure"
           ? frame.transition * (60 / bpm)
           : frame.transition;
     }
+
+    const endT = startT + moveDuration;
+    mTime = Math.max(mTime, endT);
 
     const members = parsedData.members;
 
@@ -148,7 +150,7 @@ export function generateTimeline(parsedData: DFormaData) {
           const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
           if (dist < 0.48)
             newSemanticErrors.push(
-              `[${formatTimeError(t, parsedData)}] 配置被り: ${members[i]} と ${members[j]}`,
+              `[${formatTimeError(endT, parsedData)}] 配置被り: ${members[i]} と ${members[j]}`,
             );
         }
       }
@@ -168,7 +170,7 @@ export function generateTimeline(parsedData: DFormaData) {
         moveDuration;
       if (speed > 3)
         newSemanticErrors.push(
-          `[${formatTimeError(t, parsedData)}] 速度超過: ${m} (${speed.toFixed(1)}m/s)`,
+          `[${formatTimeError(endT, parsedData)}] 速度超過: ${m} (${speed.toFixed(1)}m/s)`,
         );
     });
 
@@ -246,8 +248,8 @@ export function generateTimeline(parsedData: DFormaData) {
 
     // フレームデータをタイムラインに追加
     timeline.push({
-      endTime: t,
-      startTime: t - moveDuration,
+      endTime: endT,
+      startTime: startT,
       duration: moveDuration,
       movements,
       sectionName: frame.sectionName,
@@ -258,7 +260,6 @@ export function generateTimeline(parsedData: DFormaData) {
     parsedData.members.forEach((m) => {
       if (targetPositions[m]) currentState[m] = { ...targetPositions[m] };
     });
-    lastTime = t;
   });
 
   return { timeline, maxTime: mTime, semanticErrors: newSemanticErrors };

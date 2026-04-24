@@ -32,7 +32,7 @@ export const dformaGrammar = ohm.grammar(`
     
     NumArray = "[" ListOf<NumberVal, ","> "]"
     NumberVal = number
-    Transition = "transition" ":" number
+    Transition = "transition" ":" (Time | number)
     
     FrameId = Time | number
     Formation = Position*

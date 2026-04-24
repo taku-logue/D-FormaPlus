@@ -100,8 +100,13 @@ semantics.addOperation("toJSON", {
   Section(_sec, name, _open, frames, _close) {
     return { type: "section", name: name.toJSON(), frames: frames.toJSON() };
   },
-  Transition(_trans, _colon, num) {
-    return parseFloat(num.sourceString);
+  Transition(_trans, _colon, val) {
+    const str = val.sourceString;
+    if (str.includes(":")) {
+      const [m, b] = str.split(":").map(Number);
+      return m * 4 + b;
+    }
+    return parseFloat(str);
   },
   Frame(_frame, _at, id, _open, optTrans, content, _close) {
     const trans = optTrans.children[0]?.toJSON();

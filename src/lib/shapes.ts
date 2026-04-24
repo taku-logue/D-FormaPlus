@@ -33,8 +33,8 @@ export const ShapeLibrary: Record<string, ShapeFunction> = {
           `存在しないメンバーインデックス(${memberIndex})が指定されました。`,
         );
 
-      const distance = (i - (count - 1) / 2) * spacing;
-      const offsetX = distance * Math.cos(rad);
+      const distance = i * spacing;
+      const offsetX = distance * Math.sin(rad);
       const offsetY = -distance * Math.sin(rad);
       result.push({
         name,
