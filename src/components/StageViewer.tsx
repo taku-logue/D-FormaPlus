@@ -21,33 +21,32 @@ export default function StageViewer(props: StageViewerProps) {
   const { videoId, parsedData, getCurrentPositions } = props;
 
   // ステージの大きさ
-  const REAL_WIDTH = 16;
-  const REAL_HEIGHT = 8;
+  const REAL_WIDTH = 16; // 横16m
+  const REAL_HEIGHT = 8; // 縦8m
+  const SCALE = 50; // 1m = 50px
+  const VIEW_WIDTH = 800; // 16:9の横
+  const VIEW_HEIGHT = 450; // 16:9の縦
+  const CENTER_X = VIEW_WIDTH / 2; // 400
+  const CENTER_Y = VIEW_HEIGHT / 2; // 225
   const DOT_RADIUS = 0.25;
-  // 縮尺
-  const SCALE = 50;
-  const VIEW_WIDTH = 900;
-  const VIEW_HEIGHT = 500;
-  const CENTER_X = VIEW_WIDTH / 2;
-  const CENTER_Y = VIEW_HEIGHT / 2; // メンバーカラー
-  const memberColorMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    if (parsedData?.members) {
-      parsedData.members.forEach((name, idx) => {
-        map[name] = parsedData.colors?.[idx] || "#8e44ad";
-      });
-    }
-    return map;
-  }, [parsedData]);
 
+  // 2. 座標クリック機能
   const handleStageClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
+    const svg = e.currentTarget;
 
-    // Y軸反転をやめたので、そのまま計算
-    const rawX = (clickX - CENTER_X) / SCALE;
-    const rawY = (clickY - CENTER_Y) / SCALE;
+    // SVGが持つ座標変換のための仮想ポイントを作成
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+
+    // 画面全体とSVGのズレ・縮尺の変換マトリクスを取得
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const svgP = pt.matrixTransform(ctm.inverse());
+
+    // 正確に逆変換された座標を使って、中心からの距離を計算
+    const rawX = (svgP.x - CENTER_X) / SCALE;
+    const rawY = (svgP.y - CENTER_Y) / SCALE;
 
     // 0.5刻みにスナップ（丸める）
     const snappedX = Math.round(rawX * 2) / 2;
@@ -58,6 +57,17 @@ export default function StageViewer(props: StageViewerProps) {
       alert(`座標 ${coordText} をコピーしました！`);
     });
   };
+
+  // メンバーカラー
+  const memberColorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (parsedData?.members) {
+      parsedData.members.forEach((name, idx) => {
+        map[name] = parsedData.colors?.[idx] || "#8e44ad";
+      });
+    }
+    return map;
+  }, [parsedData]);
 
   return (
     <section className="w-[55%] flex flex-col bg-[#0a0a0a] overflow-hidden">
@@ -120,18 +130,26 @@ export default function StageViewer(props: StageViewerProps) {
             {Array.from({ length: REAL_WIDTH + 1 }).map((_, i) => {
               const val = i - REAL_WIDTH / 2;
               const x = CENTER_X + val * SCALE;
+              const yStart = CENTER_Y - (REAL_HEIGHT / 2) * SCALE;
+              const yEnd = CENTER_Y + (REAL_HEIGHT / 2) * SCALE;
               return (
                 <g key={`v-${i}`}>
                   <line
                     x1={x}
-                    y1={0}
+                    y1={yStart}
                     x2={x}
-                    y2={VIEW_HEIGHT}
+                    y2={yEnd}
                     stroke="#333"
                     strokeWidth={val === 0 ? 2 : 1}
                   />
                   {val !== 0 && (
-                    <text x={x + 4} y={CENTER_Y - 4} fill="#555" fontSize="10">
+                    <text
+                      x={x + 4}
+                      y={CENTER_Y - 4}
+                      fill="#555"
+                      fontSize="10"
+                      className="select-none"
+                    >
                       {val}
                     </text>
                   )}
@@ -142,12 +160,14 @@ export default function StageViewer(props: StageViewerProps) {
             {Array.from({ length: REAL_HEIGHT + 1 }).map((_, i) => {
               const val = i - REAL_HEIGHT / 2;
               const y = CENTER_Y + val * SCALE;
+              const xStart = CENTER_X - (REAL_WIDTH / 2) * SCALE;
+              const xEnd = CENTER_X + (REAL_WIDTH / 2) * SCALE;
               return (
                 <g key={`h-${i}`}>
                   <line
-                    x1={0}
+                    x1={xStart}
                     y1={y}
-                    x2={VIEW_WIDTH}
+                    x2={xEnd}
                     y2={y}
                     stroke="#333"
                     strokeWidth={val === 0 ? 2 : 1}
