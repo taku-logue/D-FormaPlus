@@ -34,4 +34,4 @@ export const checkCollision = (
 
 // ステージ外判定関数
 export const isBackstage = (p: Position) =>
-  p.x < -8 || p.x > 8 || p.y < -5 || p.y > 5;
+  p.x < -10 || p.x > 10 || p.y < -9 || p.y > 3;

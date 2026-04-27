@@ -155,7 +155,7 @@ export function generateTimeline(parsedData: DFormaData) {
         const p2 = targetPositions[members[j]]?.position;
         if (p1 && p2 && !isBackstage(p1) && !isBackstage(p2)) {
           const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-          if (dist < 0.48)
+          if (dist < 0.449)
             newSemanticErrors.push(
               `[${formatTimeError(endT, parsedData)}] 配置被り: ${members[i]} と ${members[j]}`,
             );
