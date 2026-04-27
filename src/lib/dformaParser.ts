@@ -1,5 +1,5 @@
 import { dformaGrammar } from "./dformaGrammar";
-import { DFormaData } from "../types";
+import { DFormaData, PositionData } from "../types";
 
 // D-Forma+ 解析ロジック
 export const semantics = dformaGrammar.createSemantics();
@@ -102,31 +102,39 @@ semantics.addOperation("toJSON", {
   },
   Transition(_trans, _colon, val) {
     const str = val.sourceString;
+    let timeVal = 0;
     if (str.includes(":")) {
       const [m, b] = str.split(":").map(Number);
-      return m * 4 + b;
+      timeVal = m * 4 + b;
+    } else {
+      timeVal = parseFloat(str);
     }
-    return parseFloat(str);
+    return { type: "transition", value: timeVal };
   },
-  Frame(_frame, _at, id, _open, optTrans, content, _close) {
-    const trans = optTrans.children[0]?.toJSON();
-    const parsed = content.toJSON();
-    let shapes, positions;
+  Frame(_frame, _at, id, _lbrace, statements, _rbrace) {
+    const timeVal = id.sourceString;
+    const stmts = statements.toJSON(); // 中身の文（transitionや配置）の配列
 
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      if (parsed[0].type) {
-        shapes = parsed;
-      } else if (parsed[0].name) {
-        positions = parsed;
-      }
+    let currentTransition = 0; // デフォルトは 0（一瞬で移動）
+    const positions: PositionData[] = [];
+    const shapes: any[] = [];
+
+    if (Array.isArray(stmts)) {
+      stmts.forEach((stmt: any) => {
+        if (stmt.type === "transition") {
+          currentTransition = stmt.value;
+        } else if (stmt.name && stmt.position) {
+          positions.push({ ...stmt, transition: currentTransition });
+        } else if (stmt.type) {
+          shapes.push({ ...stmt, transition: currentTransition });
+        }
+      });
     }
-
     return {
       type: "frame",
-      id: id.sourceString,
-      transition: trans,
-      positions,
-      shapes,
+      id: timeVal,
+      positions: positions.length > 0 ? positions : undefined,
+      shapes: shapes.length > 0 ? shapes : undefined,
     };
   },
   Formation(pos) {

@@ -8,6 +8,7 @@ export interface Position {
 export interface PositionData {
   name: string;
   position: Position;
+  transition?: number;
 }
 
 // shapeライブラリ
@@ -15,6 +16,7 @@ export interface ShapeData {
   type: string;
   params: Record<string, any>;
   origin: Position;
+  transition?: number;
 }
 
 // フレームの時間データ
@@ -46,6 +48,7 @@ export interface Movement {
   start: Position;
   end: Position;
   control?: Position;
+  duration?: number;
 }
 
 // タイムラインスケジュール

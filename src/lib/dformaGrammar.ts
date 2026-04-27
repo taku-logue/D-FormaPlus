@@ -22,9 +22,9 @@ export const dformaGrammar = ohm.grammar(`
     
     Element = Section | Frame
     Section = "section" String "{" Frame* "}"
-    Frame = "frame" "@" FrameId "{" Transition? (ShapeCall+ | Formation) "}"
-    
+    FrameStatement = Transition | ShapeCall | Position
     ShapeCall = ShapeName "(" ListOf<ShapeParam, ","> ")" ":" Coordinate
+    Frame = "frame" "@" Time "{" FrameStatement* "}"
     
     // shape関数の追加はここ！
     ShapeName = "line"

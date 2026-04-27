@@ -7,6 +7,7 @@ interface ControlBarProps {
   setIsPlaying: (val: boolean) => void;
   currentTime: number;
   maxTime: number;
+  minTime: number;
   handleSeek: (e: React.FormEvent<HTMLInputElement>) => void;
   handleCopyOffset: () => void;
   formatTimeUI: (seconds: number) => string;
@@ -18,11 +19,15 @@ export default function ControlBar({
   setIsPlaying,
   currentTime,
   maxTime,
+  minTime,
   handleSeek,
   handleCopyOffset,
   formatTimeUI,
   currentFrameObj,
 }: ControlBarProps) {
+  const totalDuration = maxTime - minTime;
+  const progressPercent =
+    totalDuration > 0 ? ((currentTime - minTime) / totalDuration) * 100 : 0;
   return (
     // バー全体のコンテナ
     <div className="flex-none flex items-center px-4 py-1.5 border-b border-[#333] bg-[#1e1e1e] gap-4 z-20 shadow-md">
@@ -95,7 +100,7 @@ export default function ControlBar({
       <div className="flex-1 flex items-center relative h-5">
         <input
           type="range"
-          min="0"
+          min={minTime}
           max={maxTime || 1}
           step="0.001"
           value={currentTime}
@@ -105,14 +110,12 @@ export default function ControlBar({
         <div className="absolute w-full h-1 bg-[#333] rounded-full pointer-events-none"></div>
         <div
           className="absolute h-1 bg-[#c242f5] rounded-full pointer-events-none"
-          style={{
-            width: `${maxTime > 0 ? (currentTime / maxTime) * 100 : 0}%`,
-          }}
+          style={{ width: `${progressPercent}%` }}
         ></div>
         <div
           className="absolute w-3 h-3 bg-[#c242f5] rounded-full shadow-[0_0_8px_#c242f5] pointer-events-none"
           style={{
-            left: `${maxTime > 0 ? (currentTime / maxTime) * 100 : 0}%`,
+            left: `${progressPercent}%`,
             transform: "translateX(-50%)",
           }}
         ></div>

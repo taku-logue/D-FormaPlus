@@ -97,7 +97,10 @@ export function generateTimeline(parsedData: DFormaData) {
             shapeData.origin,
           );
           calculatedPositions.forEach((p) => {
-            targetPositions[p.name] = { ...p };
+            targetPositions[p.name] = {
+              ...p,
+              transition: shapeData.transition,
+            };
           });
         });
       } else if (frame.positions) {
@@ -118,25 +121,29 @@ export function generateTimeline(parsedData: DFormaData) {
     });
 
     const movements: Record<string, Movement> = {};
+    let maxFrameDuration = 0;
+
     parsedData.members.forEach((m) => {
       const startPos = currentState[m]?.position || { x: 0, y: 0 };
       const endPos = targetPositions[m]?.position || startPos;
+
+      const transitionVal = targetPositions[m]?.transition ?? 0;
+      const individualDuration =
+        parsedData.mode === "measure"
+          ? transitionVal * (60 / bpm)
+          : transitionVal;
+
+      maxFrameDuration = Math.max(maxFrameDuration, individualDuration);
+
       movements[m] = {
         start: { x: startPos.x, y: startPos.y },
         end: { x: endPos.x, y: endPos.y },
+        duration: individualDuration,
       };
     });
 
     // 移動時間計算
-    let moveDuration = 0;
-    if (frame.transition !== undefined && frame.transition !== null) {
-      moveDuration =
-        parsedData.mode === "measure"
-          ? frame.transition * (60 / bpm)
-          : frame.transition;
-    }
-
-    const endT = startT + moveDuration;
+    const endT = startT + maxFrameDuration;
     mTime = Math.max(mTime, endT);
 
     const members = parsedData.members;
@@ -160,14 +167,14 @@ export function generateTimeline(parsedData: DFormaData) {
     members.forEach((m) => {
       const move = movements[m];
       if (
-        moveDuration === 0 ||
+        move.duration === 0 ||
         isBackstage(move.start) ||
         isBackstage(move.end)
       )
         return;
       const speed =
         Math.hypot(move.end.x - move.start.x, move.end.y - move.start.y) /
-        moveDuration;
+        (move.duration || 1);
       if (speed > 3)
         newSemanticErrors.push(
           `[${formatTimeError(endT, parsedData)}] 速度超過: ${m} (${speed.toFixed(1)}m/s)`,
@@ -183,7 +190,8 @@ export function generateTimeline(parsedData: DFormaData) {
         const move1 = movements[m1],
           move2 = movements[m2];
         if (
-          moveDuration === 0 ||
+          move1.duration === 0 ||
+          move2.duration === 0 ||
           isBackstage(move1.start) ||
           isBackstage(move1.end) ||
           isBackstage(move2.start) ||
@@ -198,7 +206,7 @@ export function generateTimeline(parsedData: DFormaData) {
         if (!isM1Moving && !isM2Moving) continue;
 
         if (
-          checkCollision(move1.start, move1.end, move2.start, move2.end, 0.6)
+          checkCollision(move1.start, move1.end, move2.start, move2.end, 0.45)
         ) {
           let evade1 = BASE_EVADE,
             evade2 = BASE_EVADE;
@@ -250,7 +258,7 @@ export function generateTimeline(parsedData: DFormaData) {
     timeline.push({
       endTime: endT,
       startTime: startT,
-      duration: moveDuration,
+      duration: maxFrameDuration,
       movements,
       sectionName: frame.sectionName,
       songName: frame.songName,

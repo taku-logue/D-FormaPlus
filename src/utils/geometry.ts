@@ -6,7 +6,7 @@ export const checkCollision = (
   end1: Position,
   start2: Position,
   end2: Position,
-  threshold = 0.6,
+  threshold = 0.45,
 ) => {
   // 速度ベクトル
   const v1x = end1.x - start1.x;
@@ -23,11 +23,13 @@ export const checkCollision = (
   const a = dvx * dvx + dvy * dvy;
   // 初期位置での距離の2乗
   const c = dpx * dpx + dpy * dpy;
-  if (a === 0) return Math.sqrt(c) < threshold;
+  const EPSILON = 0.001;
+  const safeThreshold = threshold - EPSILON;
+  if (a === 0) return Math.sqrt(c) < safeThreshold;
   const b = 2 * (dpx * dvx + dpy * dvy);
   let t = -b / (2 * a);
   t = Math.max(0, Math.min(1, t));
-  return a * t * t + b * t + c < threshold * threshold;
+  return a * t * t + b * t + c < safeThreshold * safeThreshold;
 };
 
 // ステージ外判定関数

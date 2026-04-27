@@ -36,10 +36,13 @@ export default function EditorApp() {
   const { youtubePlayer, isPlaying, setIsPlaying } = useYouTubePlayer(videoId);
 
   // 同期準備
+  const firstFrameTime =
+    richTimeline.length > 0 ? richTimeline[0].startTime : 0;
   const { currentTime, setCurrentTime, handleSeek } = usePlaybackSync(
     youtubePlayer,
     isPlaying,
     parsedData?.offset || 0,
+    firstFrameTime,
   );
 
   // 初期表示時に一度コンパイル
@@ -157,6 +160,7 @@ export default function EditorApp() {
           setIsPlaying={setIsPlaying}
           currentTime={currentTime}
           maxTime={maxTime}
+          minTime={firstFrameTime}
           handleSeek={handleSeek}
           handleCopyOffset={handleCopyOffset}
           formatTimeUI={(t) => formatTimeUI(t, parsedData)}

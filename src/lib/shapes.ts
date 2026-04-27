@@ -34,7 +34,7 @@ export const ShapeLibrary: Record<string, ShapeFunction> = {
         );
 
       const distance = i * spacing;
-      const offsetX = distance * Math.sin(rad);
+      const offsetX = distance * Math.cos(rad);
       const offsetY = -distance * Math.sin(rad);
       result.push({
         name,

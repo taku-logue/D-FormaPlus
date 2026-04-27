@@ -9,6 +9,7 @@ interface StageViewerProps {
   setIsPlaying: (val: boolean) => void;
   currentTime: number;
   maxTime: number;
+  minTime: number;
   handleSeek: (e: React.FormEvent<HTMLInputElement>) => void;
   handleCopyOffset: () => void;
   formatTimeUI: (seconds: number) => string;
@@ -28,7 +29,7 @@ export default function StageViewer(props: StageViewerProps) {
   const VIEW_HEIGHT = 450; // 16:9の縦
   const CENTER_X = VIEW_WIDTH / 2; // 400
   const CENTER_Y = VIEW_HEIGHT / 2; // 225
-  const DOT_RADIUS = 0.25;
+  const DOT_RADIUS = 0.225;
 
   // 2. 座標クリック機能
   const handleStageClick = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -112,6 +113,7 @@ export default function StageViewer(props: StageViewerProps) {
         setIsPlaying={props.setIsPlaying}
         currentTime={props.currentTime}
         maxTime={props.maxTime}
+        minTime={props.minTime}
         handleSeek={props.handleSeek}
         handleCopyOffset={props.handleCopyOffset}
         formatTimeUI={props.formatTimeUI}

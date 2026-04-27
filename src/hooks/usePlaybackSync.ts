@@ -5,6 +5,7 @@ export function usePlaybackSync(
   youtubePlayer: any,
   isPlaying: boolean,
   offset: number = 0,
+  firstFrameTime: number = 0,
 ) {
   // シミュレーション側の現在時間
   const [currentTime, setCurrentTime] = useState(0);
@@ -21,7 +22,7 @@ export function usePlaybackSync(
         // YouTubeから正確な現在の再生時間を取得
         const vTime = youtubePlayer.getCurrentTime();
         // オフセットの計算
-        setCurrentTime(Math.max(0, vTime - offset));
+        setCurrentTime(vTime - offset + firstFrameTime);
       }
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -37,10 +38,10 @@ export function usePlaybackSync(
       const val = parseFloat(e.currentTarget.value);
       setCurrentTime(val);
       if (youtubePlayer && typeof youtubePlayer.seekTo === "function") {
-        youtubePlayer.seekTo(val + offset, true);
+        youtubePlayer.seekTo(val + offset - firstFrameTime, true);
       }
     },
-    [youtubePlayer, offset],
+    [youtubePlayer, offset, firstFrameTime],
   );
 
   return { currentTime, setCurrentTime, handleSeek };

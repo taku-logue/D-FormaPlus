@@ -37,8 +37,11 @@ export const calculateCurrentPositions = (
     }
 
     // 進行度の計算
+    const mDuration = currentMove.duration || 0;
     const progress =
-      frame.duration > 0 ? (currentTime - frame.startTime) / frame.duration : 1;
+      mDuration > 0
+        ? Math.min(1, (currentTime - frame.startTime) / mDuration)
+        : 1;
     const eased = easeInOut(progress);
 
     // 座標の計算
