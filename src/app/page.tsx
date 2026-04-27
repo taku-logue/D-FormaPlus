@@ -132,8 +132,12 @@ export default function EditorApp() {
       {/* 画面上部のヘッダー */}
       <header className="flex items-center px-4 py-2 bg-[#111] border-b border-[#333] flex-none">
         <div className="flex items-center gap-3">
-          <div className="bg-[#c242f5] text-white font-bold w-7 h-7 flex items-center justify-center rounded text-xs">
-            IF
+          <div className="w-8 h-8 flex items-center justify-center drop-shadow-md">
+            <img
+              src="/icon.svg"
+              alt="D-Forma+ Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <h1 className="text-sm font-semibold tracking-wide text-gray-200">
             D-Forma+ Editor
