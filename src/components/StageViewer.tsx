@@ -22,34 +22,36 @@ export default function StageViewer(props: StageViewerProps) {
   const { videoId, parsedData, getCurrentPositions } = props;
 
   // ステージの大きさ
-  const REAL_WIDTH = 16; // 横16m
-  const REAL_HEIGHT = 8; // 縦8m
-  const SCALE = 50; // 1m = 50px
-  const VIEW_WIDTH = 800; // 16:9の横
-  const VIEW_HEIGHT = 450; // 16:9の縦
-  const CENTER_X = VIEW_WIDTH / 2; // 400
-  const CENTER_Y = VIEW_HEIGHT / 2; // 225
-  const DOT_RADIUS = 0.225;
+  const X_MIN = -10;
+  const X_MAX = 10;
+  const Y_MIN = -9;
+  const Y_MAX = 3;
 
-  // 2. 座標クリック機能
+  const SCALE = 40;
+  const MARGIN = 40;
+
+  const VIEW_WIDTH = (X_MAX - X_MIN) * SCALE + MARGIN * 2;
+  const VIEW_HEIGHT = (Y_MAX - Y_MIN) * SCALE + MARGIN * 2;
+
+  const CENTER_X = MARGIN + Math.abs(X_MIN) * SCALE;
+  const CENTER_Y = MARGIN + Math.abs(Y_MIN) * SCALE;
+
+  const DOT_RADIUS = 0.25;
+
+  // 座標クリック機能
   const handleStageClick = (e: React.MouseEvent<SVGSVGElement>) => {
     const svg = e.currentTarget;
-
-    // SVGが持つ座標変換のための仮想ポイントを作成
     const pt = svg.createSVGPoint();
     pt.x = e.clientX;
     pt.y = e.clientY;
 
-    // 画面全体とSVGのズレ・縮尺の変換マトリクスを取得
     const ctm = svg.getScreenCTM();
     if (!ctm) return;
     const svgP = pt.matrixTransform(ctm.inverse());
 
-    // 正確に逆変換された座標を使って、中心からの距離を計算
     const rawX = (svgP.x - CENTER_X) / SCALE;
     const rawY = (svgP.y - CENTER_Y) / SCALE;
 
-    // 0.5刻みにスナップ（丸める）
     const snappedX = Math.round(rawX * 2) / 2;
     const snappedY = Math.round(rawY * 2) / 2;
 
@@ -80,8 +82,6 @@ export default function StageViewer(props: StageViewerProps) {
             className="absolute inset-0 w-full h-full z-10"
             style={{ display: videoId ? "block" : "none" }}
           ></div>
-
-          {/* videoIdがない時用のプレースホルダー */}
           {!videoId && (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black">
               <svg
@@ -108,17 +108,7 @@ export default function StageViewer(props: StageViewerProps) {
       </div>
 
       {/* コントロールバー */}
-      <ControlBar
-        isPlaying={props.isPlaying}
-        setIsPlaying={props.setIsPlaying}
-        currentTime={props.currentTime}
-        maxTime={props.maxTime}
-        minTime={props.minTime}
-        handleSeek={props.handleSeek}
-        handleCopyOffset={props.handleCopyOffset}
-        formatTimeUI={props.formatTimeUI}
-        currentFrameObj={props.currentFrameObj}
-      />
+      <ControlBar {...props} />
 
       {/* ステージ */}
       <div className="flex-[1.3] min-h-0 p-2 flex justify-center items-center bg-[#0f0f0f] relative">
@@ -127,13 +117,14 @@ export default function StageViewer(props: StageViewerProps) {
             onClick={handleStageClick}
             viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
             className="absolute inset-0 w-full h-full cursor-crosshair"
+            preserveAspectRatio="xMidYMid meet"
           >
-            {/* 縦のグリッド線 */}
-            {Array.from({ length: REAL_WIDTH + 1 }).map((_, i) => {
-              const val = i - REAL_WIDTH / 2;
+            {/* 縦のグリッド線（X軸の線） */}
+            {Array.from({ length: X_MAX - X_MIN + 1 }).map((_, i) => {
+              const val = X_MIN + i; // -10 〜 10 に固定！
               const x = CENTER_X + val * SCALE;
-              const yStart = CENTER_Y - (REAL_HEIGHT / 2) * SCALE;
-              const yEnd = CENTER_Y + (REAL_HEIGHT / 2) * SCALE;
+              const yStart = CENTER_Y + Y_MIN * SCALE;
+              const yEnd = CENTER_Y + Y_MAX * SCALE;
               return (
                 <g key={`v-${i}`}>
                   <line
@@ -158,12 +149,13 @@ export default function StageViewer(props: StageViewerProps) {
                 </g>
               );
             })}
-            {/* 横のグリッド線 */}
-            {Array.from({ length: REAL_HEIGHT + 1 }).map((_, i) => {
-              const val = i - REAL_HEIGHT / 2;
+
+            {/* 横のグリッド線（Y軸の線） */}
+            {Array.from({ length: Y_MAX - Y_MIN + 1 }).map((_, i) => {
+              const val = Y_MIN + i;
               const y = CENTER_Y + val * SCALE;
-              const xStart = CENTER_X - (REAL_WIDTH / 2) * SCALE;
-              const xEnd = CENTER_X + (REAL_WIDTH / 2) * SCALE;
+              const xStart = CENTER_X + X_MIN * SCALE;
+              const xEnd = CENTER_X + X_MAX * SCALE;
               return (
                 <g key={`h-${i}`}>
                   <line
@@ -188,6 +180,7 @@ export default function StageViewer(props: StageViewerProps) {
                 </g>
               );
             })}
+
             {/* センターマーク */}
             <circle cx={CENTER_X} cy={CENTER_Y} r="4" fill="#666" />
 
@@ -200,7 +193,6 @@ export default function StageViewer(props: StageViewerProps) {
                   key={member.name}
                   transform={`translate(${CENTER_X + member.position.x * SCALE}, ${CENTER_Y + member.position.y * SCALE})`}
                 >
-                  {/* 丸 */}
                   <circle
                     r={DOT_RADIUS * SCALE}
                     fill={color}
@@ -208,7 +200,6 @@ export default function StageViewer(props: StageViewerProps) {
                     strokeWidth="2"
                     style={{ filter: `drop-shadow(0 0 10px ${color})` }}
                   />
-                  {/* 名前 */}
                   <text
                     y={-(DOT_RADIUS * SCALE) - 8}
                     fill="#ccc"
