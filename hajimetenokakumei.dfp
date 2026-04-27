@@ -1,0 +1,49 @@
+mode measure
+bpm 186
+offset 1.8
+youtube ("v=4DEyvsX49Yw")
+
+stage (group = "DIALOGUE+", song = "はじめてのかくめい！") {
+    members : ["yurinya", "ne-ne", "kyon", "yu-na", "yakan", "sappy", "mayuyun", "mana-t"]
+    colors : ["lightpink", "yellow", "green", "blue", "orange", "deeppink", "skyblue", "purple"]
+
+    section "1" {
+        frame @0:4 {
+            line(order = [1, 8, 2, 7, 4, 6, 3, 5], spacing = 1, angle = "vertical") : (0, 0)
+        }
+        frame @1:1 {
+            transition : 0:3
+            line(order = [1, 2, 4, 3], spacing = 2, angle = "vertical") : (1, 0)
+            line(order = [8, 7, 6, 5], spacing = 2, angle = "vertical") : (-1, -1)
+        }
+        frame @2:1 {
+            transition : 0:3
+            line(order = [2, 4, 3], spacing = 2, angle = "vertical") : (3, -2)
+            line(order = [7, 6, 5], spacing = 2, angle = "vertical") : (-3, -3)
+        }
+        frame @3:1 {
+            transition : 0:3
+            line(order = [4, 3], spacing = 2, angle = "vertical") : (5, -4)
+            line(order = [6, 5], spacing = 2, angle = "vertical") : (-5, -5)
+        }
+        frame @4:1 {
+            transition : 0:3
+            "kyon" : (7, -6)
+            "yakan" : (-7, -7)
+        }
+        frame @11:4 {
+            transition : 1:2
+            line(order = [5, 6, 7, 8, 1, 2, 4, 3], spacing = 2, angle = "diagonal") : (-7, 0)
+        }
+        frame @19:1 {
+            transition : 1:0
+            "yurinya" : (1, 1)
+        }
+        frame @21:1 {
+            transition : 0:1
+            "yurinya" : (1,0)
+            transition : 1:0
+            "ne-ne" : (3, 1)
+        }
+    }
+}

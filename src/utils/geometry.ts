@@ -8,14 +8,16 @@ export const checkCollision = (
   end2: Position,
   threshold = 0.45,
 ) => {
+  // 一マス0.7m
+  const UNIT = 0.7;
   // 速度ベクトル
-  const v1x = end1.x - start1.x;
-  const v1y = end1.y - start1.y;
-  const v2x = end2.x - start2.x;
-  const v2y = end2.y - start2.y;
+  const v1x = (end1.x - start1.x) * UNIT;
+  const v1y = (end1.y - start1.y) * UNIT;
+  const v2x = (end2.x - start2.x) * UNIT;
+  const v2y = (end2.y - start2.y) * UNIT;
   // 相対位置ベクトル
-  const dpx = start1.x - start2.x;
-  const dpy = start1.y - start2.y;
+  const dpx = (start1.x - start2.x) * UNIT;
+  const dpy = (start1.y - start2.y) * UNIT;
   // 相対速度ベクトル
   const dvx = v1x - v2x;
   const dvy = v1y - v2y;

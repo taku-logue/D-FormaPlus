@@ -22,9 +22,9 @@ export default function StageViewer(props: StageViewerProps) {
   const { videoId, parsedData, getCurrentPositions } = props;
 
   // ステージの大きさ
-  const X_MIN = -10;
-  const X_MAX = 10;
-  const Y_MIN = -9;
+  const X_MIN = -8;
+  const X_MAX = 8;
+  const Y_MIN = -7;
   const Y_MAX = 3;
 
   const SCALE = 40;
@@ -36,7 +36,7 @@ export default function StageViewer(props: StageViewerProps) {
   const CENTER_X = MARGIN + Math.abs(X_MIN) * SCALE;
   const CENTER_Y = MARGIN + Math.abs(Y_MIN) * SCALE;
 
-  const DOT_RADIUS = 0.25;
+  const DOT_RADIUS = 0.3;
 
   // 座標クリック機能
   const handleStageClick = (e: React.MouseEvent<SVGSVGElement>) => {

@@ -154,8 +154,9 @@ export function generateTimeline(parsedData: DFormaData) {
         const p1 = targetPositions[members[i]]?.position;
         const p2 = targetPositions[members[j]]?.position;
         if (p1 && p2 && !isBackstage(p1) && !isBackstage(p2)) {
-          const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
-          if (dist < 0.449)
+          const distInUnits = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+          const realDist = distInUnits * 0.7;
+          if (realDist < 0.449)
             newSemanticErrors.push(
               `[${formatTimeError(endT, parsedData)}] 配置被り: ${members[i]} と ${members[j]}`,
             );
@@ -172,9 +173,12 @@ export function generateTimeline(parsedData: DFormaData) {
         isBackstage(move.end)
       )
         return;
-      const speed =
-        Math.hypot(move.end.x - move.start.x, move.end.y - move.start.y) /
-        (move.duration || 1);
+      const distInUnits = Math.hypot(
+        move.end.x - move.start.x,
+        move.end.y - move.start.y,
+      );
+      const realDist = distInUnits * 0.7;
+      const speed = realDist / (move.duration || 1);
       if (speed > 3)
         newSemanticErrors.push(
           `[${formatTimeError(endT, parsedData)}] 速度超過: ${m} (${speed.toFixed(1)}m/s)`,
